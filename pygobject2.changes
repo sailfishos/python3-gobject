@@ -1,0 +1,148 @@
+* Tue Dec 07 2010 Damien Lespiau <damien.lespiau@intel.com> - 2.21.3
+- Update to 2.21.3 (needed for pyclutter 1.3.2) (BMC#11291)
+
+* Sat Apr 10 2010 Anas Nashif <anas.nashif@intel.com> - 2.21.1
+- Fixed rpmlint errors
+
+* Sun Mar 14 2010 Anas Nashif <anas.nashif@intel.com> - 2.21.1
+- Fixed file list
+
+* Thu Mar 11 2010 Zhang Qiang <qiang.z.zhang@intel.com> 2.21.1
+- Update to 2.21
+
+* Thu Sep 24 2009 Zhang Qiang <qiang.z.zhang@intel.com> 2.20
+- Update to 2.20
+
+* Tue Sep 01 2009 Xu Li <xu.li@intel.com> 2.19.0
+- Upgraded to 2.19.0
+- Fixed the file list
+
+* Fri Mar 20 2009 Anas Nashif <anas.nashif@intel.com> 2.16.1
+- Fixed dependencies and file list
+
+* Mon Mar 2 2009 Zhu Yanhai <yanhai.zhu@intel.com> 2.16.1
+- Update to 2.16.1
+- Remove a unused patch
+- Fix .spec to silent rpmlint
+
+* Fri Feb 20 2009 Zhu Yanhai <yanhai.zhu@intel.com> 2.16.0
+- Update to 2.16.0
+- Correct the URL in spec file
+
+
+* Sat Sep 20 2008 Anas Nashif <anas.nashif@intel.com> 2.15.4
+- initial import into moblin
+
+* Wed Sep 03 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.4-1.fc10
+- Update to 2.15.4
+
+* Sun Aug 31 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.3-1.fc10
+- Update to 2.15.3
+
+* Tue Aug 12 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.2-3.fc10
+- Modify thread initialization patch to fix RH bug #458522.
+
+* Thu Aug 07 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.2-2.fc10
+- Add patch for RH bug #544946 (error on gtk.gdk.threads_init).
+
+* Sat Jul 26 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.2-1.fc10
+- Update to 2.15.2
+
+* Sun Jul 20 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.1-2.fc10
+- Fix directory ownership.  (RH bug #455974, patch by Robert Scheck).
+
+* Wed Jul 16 2008 Matthew Barnes <mbarnes@redhat.com> - 2.15.1-1.fc10
+- Update to 2.15.1
+- Bump glib2_version to 2.16.0.
+- Remove ancient automake_version.
+- Add a pygobject2-codegen subpackage.
+
+* Fri May 23 2008 Matthew Barnes <mbarnes@redhat.com> - 2.14.2-1.fc10
+- Update to 2.14.2
+
+* Sun Feb 17 2008 Matthew Barnes <mbarnes@redhat.com> - 2.14.1-2.fc9
+- Rebuild with GCC 4.3
+
+* Thu Jan 03 2008 Matthew Barnes <mbarnes@redhat.com> - 2.14.1-1.fc9
+- Update to 2.14.1
+
+* Fri Oct 26 2007 Matthew Barnes <mbarnes@redhat.com> - 2.14.0-2.fc9
+- Remove redundant requirements.
+- Use name tag where appropriate.
+
+* Sun Sep 16 2007 Matthew Barnes <mbarnes@redhat.com> - 2.14.0-1.fc8
+- Update to 2.14.0
+
+* Wed Aug 29 2007 Fedora Release Engineering <rel-eng at fedoraproject dot org> - 2.13.2-3
+- Rebuild for selinux ppc32 issue.
+
+* Wed Aug  8 2007 Matthias Clasen <mclasen@redhat.com> - 2.13.2-2
+- Update the license field
+
+* Sat Jul 07 2007 Matthew Barnes <mbarnes@redhat.com> - 2.13.2-1.fc8
+- Update to 2.13.2
+
+* Fri May 18 2007 Matthew Barnes <mbarnes@redhat.com> - 2.13.1-1.fc8
+- Update to 2.13.1
+- Remove patch for RH bug #237179 (fixed upstream).
+
+* Thu May 03 2007 Matthew Barnes <mbarnes@redhat.com> - 2.12.3-5.fc7
+- Fix devel subpackage dependency (RH bug #238793).
+
+* Thu Apr 19 2007 Matthew Barnes <mbarnes@redhat.com> - 2.12.3-3.fc7
+- Add patch for RH bug #237179 (memory leak).
+
+* Thu Dec  7 2006 Jeremy Katz <katzj@redhat.com> - 2.12.3-2
+- rebuild against python 2.5
+
+* Sat Nov 18 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.3-1.fc7
+- Update to 2.12.3
+
+* Thu Oct 26 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.2-3.fc7
+- Add subpackage pygobject2-doc (bug #205231).
+
+* Tue Oct 24 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.2-2.fc7
+- Use python_sitearch instead of python_sitelib.
+
+* Sun Oct 15 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.2-1.fc7
+- Update to 2.12.2
+
+* Sun Sep 24 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.1-3.fc6
+- Require glib2-devel for the -devel package.
+
+* Fri Sep 22 2006 Matthew Barnes <mbarnes@redhat.com> - 2.12.1-2.fc6
+- Define a python_sitelib macro for files under site_packages.
+- Spec file cleanups.
+
+* Tue Sep  5 2006 Matthias Clasen <mclasen@redhat.com> - 2.12.1-1.fc6
+- Update to 2.12.1
+- Require pkgconfig for the -devel package
+
+* Sun Aug 27 2006 Matthias Clasen <mclasen@redhat.com> - 2.11.4-1.fc6
+- Update to 2.11.4
+- Use pre-built docs
+
+* Mon Aug 21 2006 Matthias Clasen <mclasen@redhat.com> - 2.11.3-1.fc6
+- Update to 2.11.3
+
+* Sun Aug 13 2006 Matthias Clasen <mclasen@redhat.com> - 2.11.2-2.fc6
+- BR libxslt
+
+* Sun Aug 13 2006 Matthias Clasen <mclasen@redhat.com> - 2.11.2-1.fc6
+- Update to 2.11.2
+
+* Wed Jul 19 2006 Jesse Keating <jkeating@redhat.com> - 2.11.0-2
+- rebuild
+
+* Wed Jul 12 2006 Matthias Clasen <mclasen@redhat.com> - 2.11.0-1
+- Update to 2.11.0
+
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 2.10.1-3
+- rebuild
+- Add missing br libtool
+
+* Fri May 19 2006 John (J5) Palmieri <johnp@redhat.com> - 2.10.1-2
+- Cleanup
+
+* Fri May 12 2006 John (J5) Palmieri <johnp@redhat.com> - 2.10.1-1
+- Initial package

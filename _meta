@@ -1,0 +1,8 @@
+<package project="Mer:Trunk:Base" name="pygobject2">
+  <title>Python bindings for GObject</title>
+  <description>The %{name} package provides a convenient wrapper for the GObject library
+for use in Python programs.
+
+</description>
+  <url>http://www.pygtk.org/</url>
+</package>
