@@ -25,13 +25,14 @@ description = """
  a prebuilt dialog containing a GtkColorSelection.
  """
 
-# See FIXME's
-is_fully_bound = False
 
 from gi.repository import Gtk, Gdk
 
+
 class ColorSelectorApp:
     def __init__(self):
+        # FIXME: we should allow Gdk.Color to be allocated without parameters
+        #        Also color doesn't seem to work
         self.color = Gdk.RGBA()
         self.color.red = 0
         self.color.blue = 1
@@ -43,8 +44,8 @@ class ColorSelectorApp:
         self.window.set_border_width(8)
         self.window.connect('destroy', lambda w: Gtk.main_quit())
 
-        vbox = Gtk.VBox(homogeneous = False,
-                        spacing = 8)
+        vbox = Gtk.VBox(homogeneous=False,
+                        spacing=8)
         vbox.set_border_width(8)
         self.window.add(vbox)
 
@@ -63,9 +64,9 @@ class ColorSelectorApp:
         frame.add(self.da)
 
         alignment = Gtk.Alignment(xalign=1.0,
-                                 yalign=0.5,
-                                 xscale=0.0,
-                                 yscale=0.0)
+                                  yalign=0.5,
+                                  xscale=0.0,
+                                  yscale=0.0)
 
         button = Gtk.Button(label='_Change the above color',
                             use_underline=True)
@@ -101,8 +102,9 @@ class ColorSelectorApp:
 
         dialog.destroy()
 
+
 def main(demoapp=None):
-    app = ColorSelectorApp()
+    ColorSelectorApp()
     Gtk.main()
 
 if __name__ == '__main__':

@@ -20,14 +20,15 @@
 # USA
 
 title = "Search Entry"
-description = """
-GtkEntry allows to display icons and progress information. This demo shows how to use these features in a search entry.
- """
+description = """GtkEntry allows to display icons and progress information.
+This demo shows how to use these features in a search entry.
+"""
 
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, GObject
 
 (PIXBUF_COL,
  TEXT_COL) = range(2)
+
 
 class SearchboxApp:
     def __init__(self, demoapp):
@@ -36,7 +37,7 @@ class SearchboxApp:
         self.window = Gtk.Dialog('Search Entry',
                                  buttons=(Gtk.STOCK_CLOSE, Gtk.ResponseType.NONE))
 
-        self.window.connect('response', lambda x, y: self.window.destroy()) 
+        self.window.connect('response', lambda x, y: self.window.destroy())
         self.window.connect('destroy', Gtk.main_quit)
 
         content_area = self.window.get_content_area()
@@ -113,7 +114,7 @@ class SearchboxApp:
         entry.progress_pulse()
         return True
 
-    def search_progress_done (self, entry):
+    def search_progress_done(self, entry):
         entry.set_progress_fraction(0.0)
 
     def finish_search(self, button, entry):
@@ -134,7 +135,7 @@ class SearchboxApp:
     def start_search(self, button, entry):
         self.show_cancel_button()
         self.search_progress_id = GObject.timeout_add_seconds(1,
-                                                              self.start_search_feedback, 
+                                                              self.start_search_feedback,
                                                               entry)
         self.finish_search_id = GObject.timeout_add_seconds(15,
                                                             self.finish_search,
@@ -150,25 +151,25 @@ class SearchboxApp:
     def clear_entry(self, entry):
         entry.set_text('')
 
-    def search_by_name (self, item, entry):
+    def search_by_name(self, item, entry):
         entry.set_icon_from_stock(Gtk.EntryIconPosition.PRIMARY,
                                   Gtk.STOCK_FIND)
         entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY,
-                                   'Search by name\n' + \
-                                   'Click here to change the search type')
+                                    'Search by name\n' +
+                                    'Click here to change the search type')
 
     def search_by_description(self, item, entry):
-        entry.set_icon_from_stock (Gtk.EntryIconPosition.PRIMARY,
-                                   Gtk.STOCK_EDIT)
+        entry.set_icon_from_stock(Gtk.EntryIconPosition.PRIMARY,
+                                  Gtk.STOCK_EDIT)
         entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY,
-                                    'Search by description\n' + \
+                                    'Search by description\n' +
                                     'Click here to change the search type')
 
     def search_by_file(self, item, entry):
         entry.set_icon_from_stock(Gtk.EntryIconPosition.PRIMARY,
                                   Gtk.STOCK_OPEN)
         entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY,
-                                    'Search by file name\n' + \
+                                    'Search by file name\n' +
                                     'Click here to change the search type')
 
     def create_search_menu(self, entry):
@@ -199,7 +200,6 @@ class SearchboxApp:
 
         return menu
 
-
     def icon_press_cb(self, entry, position, event, menu):
         if position == Gtk.EntryIconPosition.PRIMARY:
             menu.popup(None, None, None, None,
@@ -212,16 +212,16 @@ class SearchboxApp:
         entry.set_icon_sensitive(Gtk.EntryIconPosition.SECONDARY, has_text)
         button.set_sensitive(has_text)
 
-    def activate_cb (self, entry, button):
+    def activate_cb(self, entry, button):
         if self.search_progress_id != 0:
             return
         self.start_search(button, entry)
 
     def search_entry_destroyed(self, widget):
-        if finish_search_id != 0:
-            GObject.source_remove(finish_search_id)
-        if search_progress_id != 0:
-            GObject.source_remove(search_progress_id)
+        if self.finish_search_id != 0:
+            GObject.source_remove(self.finish_search_id)
+        if self.search_progress_id != 0:
+            GObject.source_remove(self.search_progress_id)
 
         self.window = None
 
@@ -242,10 +242,11 @@ class SearchboxApp:
         item = Gtk.MenuItem.new_with_label('Search by')
         item.show()
         item.set_submenu(search_menu)
-        menu.append (item)
+        menu.append(item)
+
 
 def main(demoapp=None):
-    app = SearchboxApp(demoapp)
+    SearchboxApp(demoapp)
     Gtk.main()
 
 if __name__ == '__main__':

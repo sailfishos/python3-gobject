@@ -21,11 +21,12 @@
 
 title = "Links"
 description = """
-GtkLabel can show hyperlinks. The default action is to call gtk_show_uri() on 
+GtkLabel can show hyperlinks. The default action is to call gtk_show_uri() on
 their URI, but it is possible to override this with a custom handler.
 """
 
 from gi.repository import Gtk
+
 
 class LinksApp:
     def __init__(self):
@@ -41,7 +42,7 @@ or activated via <a href="keynav">keynav</a>""")
 
         label.set_use_markup(True)
         label.connect("activate-link", self.activate_link)
-        self.window.add(label);
+        self.window.add(label)
         label.show()
 
         self.window.show()
@@ -66,8 +67,9 @@ a program (exclusively) via keyboard input."""
     def response_cb(self, dialog, response_id):
         dialog.destroy()
 
+
 def main(demoapp=None):
-    app = LinksApp()
+    LinksApp()
     Gtk.main()
 
 if __name__ == '__main__':

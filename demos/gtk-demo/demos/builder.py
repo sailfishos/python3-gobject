@@ -24,8 +24,11 @@ description = """
 Demonstrates an interface loaded from a XML description.
 """
 
-from gi.repository import Gtk, GdkPixbuf, Gdk
+
 import os
+
+from gi.repository import Gtk
+
 
 class BuilderApp:
     def __init__(self, demoapp):
@@ -52,8 +55,9 @@ class BuilderApp:
     def quit_activate(self, action):
         Gtk.main_quit()
 
+
 def main(demoapp=None):
-    app = BuilderApp(demoapp)
+    BuilderApp(demoapp)
     Gtk.main()
 
 if __name__ == '__main__':

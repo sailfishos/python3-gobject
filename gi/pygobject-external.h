@@ -26,13 +26,11 @@
 
 G_BEGIN_DECLS
 
-static PyTypeObject *_PyGObject_Type;
 static PyTypeObject *_PyGTypeWrapper_Type;
 
-#define PyGObject_Type (*_PyGObject_Type)
 #define PyGTypeWrapper_Type (*_PyGTypeWrapper_Type)
 
-__attribute__ ( (unused))
+G_GNUC_UNUSED
 static int
 _pygobject_import (void)
 {
@@ -45,23 +43,17 @@ _pygobject_import (void)
         return 1;
     }
 
-    from_list = Py_BuildValue ("(ss)", "GObject", "GTypeWrapper");
+    from_list = Py_BuildValue ("(s)", "GType");
     if (from_list == NULL) {
         return -1;
     }
 
-    module = PyImport_ImportModuleEx ("gobject", NULL, NULL, from_list);
+    module = PyImport_ImportModuleEx ("gi._gobject", NULL, NULL, from_list);
 
     Py_DECREF (from_list);
 
     if (module == NULL) {
         return -1;
-    }
-
-    _PyGObject_Type = (PyTypeObject *) PyObject_GetAttrString (module, "GObject");
-    if (_PyGObject_Type == NULL) {
-        retval = -1;
-        goto out;
     }
 
     _PyGTypeWrapper_Type = (PyTypeObject *) PyObject_GetAttrString (module, "GType");

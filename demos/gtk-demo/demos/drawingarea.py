@@ -34,8 +34,11 @@ and drag in the scribble area to draw squiggles. Resize the window
 to clear the area.
 """
 
-from gi.repository import Gtk, Gdk
+
 import cairo
+
+from gi.repository import Gtk, Gdk
+
 
 class DrawingAreaApp:
     def __init__(self):
@@ -51,7 +54,7 @@ class DrawingAreaApp:
 
         # create checkerboard area
         label = Gtk.Label()
-        label.set_markup('<u>Scribble area</u>')
+        label.set_markup('<u>Checkerboard pattern</u>')
         vbox.pack_start(label, False, False, 0)
 
         frame = Gtk.Frame()
@@ -65,7 +68,7 @@ class DrawingAreaApp:
 
         # create scribble area
         label = Gtk.Label()
-        label.set_markup('<u>Checkerboard pattern</u>')
+        label.set_markup('<u>Scribble area</u>')
         vbox.pack_start(label, False, False, 0)
 
         frame = Gtk.Frame()
@@ -109,7 +112,7 @@ class DrawingAreaApp:
 
         while i < width:
             j = spacing
-            ycount = xcount % 2 # start with even/odd depending on row
+            ycount = xcount % 2  # start with even/odd depending on row
             while j < height:
                 if ycount % 2:
                     cairo_ctx.set_source_rgb(0.45777, 0, 0.45777)
@@ -165,7 +168,7 @@ class DrawingAreaApp:
         return True
 
     def scribble_motion_notify_event(self, da, event):
-        if self.surface == None: # paranoia check, in case we haven't gotten a configure event
+        if self.surface is None:  # paranoia check, in case we haven't gotten a configure event
             return False
 
         # This call is very important; it requests the next motion event.
@@ -186,7 +189,7 @@ class DrawingAreaApp:
         return True
 
     def scribble_button_press_event(self, da, event):
-        if self.surface == None: # paranoia check, in case we haven't gotten a configure event
+        if self.surface is None:  # paranoia check, in case we haven't gotten a configure event
             return False
 
         if event.button == 1:
@@ -194,8 +197,9 @@ class DrawingAreaApp:
 
         return True
 
+
 def main(demoapp=None):
-    app = DrawingAreaApp()
+    DrawingAreaApp()
     Gtk.main()
 
 if __name__ == '__main__':

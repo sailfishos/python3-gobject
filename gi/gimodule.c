@@ -23,9 +23,12 @@
 
 #include "pygi-private.h"
 #include "pygi.h"
+#include "pyglib.h"
 
 #include <pygobject.h>
 #include <pyglib-python-compat.h>
+
+PyObject *PyGIDeprecationWarning;
 
 static PyObject *
 _wrap_pyg_enum_add (PyObject *self,
@@ -60,8 +63,11 @@ _wrap_pyg_enum_register_new_gtype_and_add (PyObject *self,
     GIEnumInfo *info;
     gint n_values;
     GEnumValue *g_enum_values;
-    GType g_type;
+    int i;
+    const gchar *namespace;
     const gchar *type_name;
+    gchar *full_name;
+    GType g_type;
 
     if (!PyArg_ParseTupleAndKeywords (args, kwargs,
                                       "O:enum_add_make_new_gtype",
@@ -77,9 +83,13 @@ _wrap_pyg_enum_register_new_gtype_and_add (PyObject *self,
 
     info = (GIEnumInfo *)py_info->info;
     n_values = g_enum_info_get_n_values (info);
+
+    /* The new memory is zero filled which fulfills the registration
+     * function requirement that the last item is zeroed out as a terminator.
+     */
     g_enum_values = g_new0 (GEnumValue, n_values + 1);
 
-    for (int i=0; i < n_values; i++) {
+    for (i = 0; i < n_values; i++) {
         GIValueInfo *value_info;
         GEnumValue *enum_value;
         const gchar *name;
@@ -103,14 +113,39 @@ _wrap_pyg_enum_register_new_gtype_and_add (PyObject *self,
         g_base_info_unref ((GIBaseInfo *) value_info);
     }
 
-    g_enum_values[n_values].value = 0;
-    g_enum_values[n_values].value_nick = NULL;
-    g_enum_values[n_values].value_name = NULL;
-
+    /* Obfuscate the full_name by prefixing it with "Py" to avoid conflicts
+     * with real GTypes. See: https://bugzilla.gnome.org/show_bug.cgi?id=692515
+     */
+    namespace = g_base_info_get_namespace ((GIBaseInfo *) info);
     type_name = g_base_info_get_name ((GIBaseInfo *) info);
-    type_name = g_strdup (type_name);
-    g_type = g_enum_register_static (type_name, g_enum_values);
+    full_name = g_strconcat ("Py", namespace, type_name, NULL);
 
+    /* If enum registration fails, free all the memory allocated
+     * for the values array. This needs to leak when successful
+     * as GObject keeps a reference to the data as specified in the docs.
+     */
+    g_type = g_enum_register_static (full_name, g_enum_values);
+    if (g_type == G_TYPE_INVALID) {
+        for (i = 0; i < n_values; i++) {
+            GEnumValue *enum_value = &g_enum_values[i];
+
+            /* Only free value_name if it is different from value_nick to avoid
+             * a double free. The pointer might have been is re-used in the case
+             * c_identifier was NULL in the above loop.
+             */
+            if (enum_value->value_name != enum_value->value_nick)
+                g_free ((gchar *) enum_value->value_name);
+            g_free ((gchar *) enum_value->value_nick);
+        }
+
+        PyErr_Format (PyExc_RuntimeError, "Unable to register enum '%s'", full_name);
+
+        g_free (g_enum_values);
+        g_free (full_name);
+        return NULL;
+    }
+
+    g_free (full_name);
     return pyg_enum_add (NULL, g_type_name (g_type), NULL, g_type);
 }
 
@@ -147,8 +182,11 @@ _wrap_pyg_flags_register_new_gtype_and_add (PyObject *self,
     GIEnumInfo *info;
     gint n_values;
     GFlagsValue *g_flags_values;
-    GType g_type;
+    int i;
+    const gchar *namespace;
     const gchar *type_name;
+    gchar *full_name;
+    GType g_type;
 
     if (!PyArg_ParseTupleAndKeywords (args, kwargs,
                                       "O:flags_add_make_new_gtype",
@@ -164,9 +202,13 @@ _wrap_pyg_flags_register_new_gtype_and_add (PyObject *self,
 
     info = (GIEnumInfo *)py_info->info;
     n_values = g_enum_info_get_n_values (info);
+
+    /* The new memory is zero filled which fulfills the registration
+     * function requirement that the last item is zeroed out as a terminator.
+     */
     g_flags_values = g_new0 (GFlagsValue, n_values + 1);
 
-    for (int i=0; i < n_values; i++) {
+    for (i = 0; i < n_values; i++) {
         GIValueInfo *value_info;
         GFlagsValue *flags_value;
         const gchar *name;
@@ -190,42 +232,40 @@ _wrap_pyg_flags_register_new_gtype_and_add (PyObject *self,
         g_base_info_unref ((GIBaseInfo *) value_info);
     }
 
-    g_flags_values[n_values].value = 0;
-    g_flags_values[n_values].value_nick = NULL;
-    g_flags_values[n_values].value_name = NULL;
-
+    /* Obfuscate the full_name by prefixing it with "Py" to avoid conflicts
+     * with real GTypes. See: https://bugzilla.gnome.org/show_bug.cgi?id=692515
+     */
+    namespace = g_base_info_get_namespace ((GIBaseInfo *) info);
     type_name = g_base_info_get_name ((GIBaseInfo *) info);
-    type_name = g_strdup (type_name);
-    g_type = g_flags_register_static (type_name, g_flags_values);
+    full_name = g_strconcat ("Py", namespace, type_name, NULL);
 
+    /* If enum registration fails, free all the memory allocated
+     * for the values array. This needs to leak when successful
+     * as GObject keeps a reference to the data as specified in the docs.
+     */
+    g_type = g_flags_register_static (full_name, g_flags_values);
+    if (g_type == G_TYPE_INVALID) {
+        for (i = 0; i < n_values; i++) {
+            GFlagsValue *flags_value = &g_flags_values[i];
+
+            /* Only free value_name if it is different from value_nick to avoid
+             * a double free. The pointer might have been is re-used in the case
+             * c_identifier was NULL in the above loop.
+             */
+            if (flags_value->value_name != flags_value->value_nick)
+                g_free ((gchar *) flags_value->value_name);
+            g_free ((gchar *) flags_value->value_nick);
+        }
+
+        PyErr_Format (PyExc_RuntimeError, "Unable to register flags '%s'", full_name);
+
+        g_free (g_flags_values);
+        g_free (full_name);
+        return NULL;
+    }
+
+    g_free (full_name);
     return pyg_flags_add (NULL, g_type_name (g_type), NULL, g_type);
-}
-
-
-static PyObject *
-_wrap_pyg_set_object_has_new_constructor (PyObject *self,
-                                          PyObject *args,
-                                          PyObject *kwargs)
-{
-    static char *kwlist[] = { "g_type", NULL };
-    PyObject *py_g_type;
-    GType g_type;
-
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs,
-                                      "O!:set_object_has_new_constructor",
-                                      kwlist, &PyGTypeWrapper_Type, &py_g_type)) {
-        return NULL;
-    }
-
-    g_type = pyg_type_from_object (py_g_type);
-    if (!g_type_is_a (g_type, G_TYPE_OBJECT)) {
-        PyErr_SetString (PyExc_TypeError, "must be a subtype of GObject");
-        return NULL;
-    }
-
-    pyg_set_object_has_new_constructor (g_type);
-
-    Py_RETURN_NONE;
 }
 
 static void
@@ -475,11 +515,88 @@ _wrap_pyg_variant_type_from_string (PyObject *self, PyObject *args)
 
     py_type = _pygi_type_import_by_name ("GLib", "VariantType");
 
-    if (PyType_IsSubtype (py_type, &PyGIBoxed_Type))
-        py_variant = _pygi_boxed_new ( (PyTypeObject *) py_type, type_string, FALSE);
-    else
-        py_variant = _pygi_struct_new ( (PyTypeObject *) py_type, type_string, FALSE);
+    py_variant = _pygi_boxed_new ( (PyTypeObject *) py_type, type_string, FALSE, 0);
+
     return py_variant;
+}
+
+static PyObject *
+_wrap_pyg_source_new (PyObject *self, PyObject *args)
+{
+    return pyg_source_new ();
+}
+
+#define CHUNK_SIZE 8192
+
+static PyObject*
+pyg_channel_read(PyObject* self, PyObject *args, PyObject *kwargs)
+{
+    int max_count = -1;
+    PyObject *py_iochannel, *ret_obj = NULL;
+    gsize total_read = 0;
+    GError* error = NULL;
+    GIOStatus status = G_IO_STATUS_NORMAL;
+    GIOChannel *iochannel = NULL;
+
+    if (!PyArg_ParseTuple (args, "Oi:pyg_channel_read", &py_iochannel, &max_count)) {
+        return NULL;
+    }
+    if (!pyg_boxed_check (py_iochannel, G_TYPE_IO_CHANNEL)) {
+        PyErr_SetString(PyExc_TypeError, "first argument is not a GLib.IOChannel");
+        return NULL;
+    }
+	
+    if (max_count == 0)
+        return PYGLIB_PyBytes_FromString("");
+
+    iochannel = pyg_boxed_get (py_iochannel, GIOChannel);
+
+    while (status == G_IO_STATUS_NORMAL
+	   && (max_count == -1 || total_read < max_count)) {
+	gsize single_read;
+	char* buf;
+	gsize buf_size;
+	
+	if (max_count == -1) 
+	    buf_size = CHUNK_SIZE;
+	else {
+	    buf_size = max_count - total_read;
+	    if (buf_size > CHUNK_SIZE)
+		buf_size = CHUNK_SIZE;
+        }
+	
+	if ( ret_obj == NULL ) {
+	    ret_obj = PYGLIB_PyBytes_FromStringAndSize((char *)NULL, buf_size);
+	    if (ret_obj == NULL)
+		goto failure;
+	}
+	else if (buf_size + total_read > PYGLIB_PyBytes_Size(ret_obj)) {
+	    if (PYGLIB_PyBytes_Resize(&ret_obj, buf_size + total_read) == -1)
+		goto failure;
+	}
+       
+        buf = PYGLIB_PyBytes_AsString(ret_obj) + total_read;
+
+        Py_BEGIN_ALLOW_THREADS;
+        status = g_io_channel_read_chars (iochannel, buf, buf_size, &single_read, &error);
+        Py_END_ALLOW_THREADS;
+
+        if (pyglib_error_check(&error))
+	    goto failure;
+	
+	total_read += single_read;
+    }
+	
+    if ( total_read != PYGLIB_PyBytes_Size(ret_obj) ) {
+	if (PYGLIB_PyBytes_Resize(&ret_obj, total_read) == -1)
+	    goto failure;
+    }
+
+    return ret_obj;
+
+  failure:
+    Py_XDECREF(ret_obj);
+    return NULL;
 }
 
 static PyMethodDef _gi_functions[] = {
@@ -488,11 +605,13 @@ static PyMethodDef _gi_functions[] = {
     { "flags_add", (PyCFunction) _wrap_pyg_flags_add, METH_VARARGS | METH_KEYWORDS },
     { "flags_register_new_gtype_and_add", (PyCFunction) _wrap_pyg_flags_register_new_gtype_and_add, METH_VARARGS | METH_KEYWORDS },
 
-    { "set_object_has_new_constructor", (PyCFunction) _wrap_pyg_set_object_has_new_constructor, METH_VARARGS | METH_KEYWORDS },
     { "register_interface_info", (PyCFunction) _wrap_pyg_register_interface_info, METH_VARARGS },
     { "hook_up_vfunc_implementation", (PyCFunction) _wrap_pyg_hook_up_vfunc_implementation, METH_VARARGS },
     { "variant_new_tuple", (PyCFunction) _wrap_pyg_variant_new_tuple, METH_VARARGS },
     { "variant_type_from_string", (PyCFunction) _wrap_pyg_variant_type_from_string, METH_VARARGS },
+    { "source_new", (PyCFunction) _wrap_pyg_source_new, METH_NOARGS },
+    { "source_set_callback", (PyCFunction) pyg_source_set_callback, METH_VARARGS },
+    { "io_channel_read", (PyCFunction) pyg_channel_read, METH_VARARGS },
     { NULL, NULL, 0 }
 };
 
@@ -508,6 +627,13 @@ PYGLIB_MODULE_START(_gi, "_gi")
 {
     PyObject *api;
 
+    /* Always enable Python threads since we cannot predict which GI repositories
+     * might accept Python callbacks run within non-Python threads or might trigger
+     * toggle ref notifications.
+     * See: https://bugzilla.gnome.org/show_bug.cgi?id=709223
+     */
+    PyEval_InitThreads ();
+
     if (pygobject_init (-1, -1, -1) == NULL) {
         return PYGLIB_MODULE_ERROR_RETURN;
     }
@@ -520,7 +646,24 @@ PYGLIB_MODULE_START(_gi, "_gi")
     _pygi_info_register_types (module);
     _pygi_struct_register_types (module);
     _pygi_boxed_register_types (module);
+    _pygi_ccallback_register_types (module);
     _pygi_argument_init();
+
+    /* Use RuntimeWarning as the base class of PyGIDeprecationWarning
+     * for unstable (odd minor version) and use DeprecationWarning for
+     * stable (even minor version). This is so PyGObject deprecations
+     * behave the same as regular Python deprecations in stable releases.
+     */
+#if PYGOBJECT_MINOR_VERSION % 2
+    PyGIDeprecationWarning = PyErr_NewException("gi.PyGIDeprecationWarning",
+                                                PyExc_RuntimeWarning, NULL);
+#else
+    PyGIDeprecationWarning = PyErr_NewException("gi.PyGIDeprecationWarning",
+                                                PyExc_DeprecationWarning, NULL);
+#endif
+
+    Py_INCREF(PyGIDeprecationWarning);
+    PyModule_AddObject(module, "PyGIDeprecationWarning", PyGIDeprecationWarning);
 
     api = PYGLIB_CPointer_WrapPointer ( (void *) &CAPI, "gi._API");
     if (api == NULL) {
