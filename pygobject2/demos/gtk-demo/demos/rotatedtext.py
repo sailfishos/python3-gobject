@@ -21,8 +21,10 @@
 # USA
 
 title = "Rotated Text"
-description = """This demo shows how to use PangoCairo to draw rotated and transformed text.  The right pane shows a rotated GtkLabel widget.
-In both cases, a custom PangoCairo shape renderer is installed to draw a red heard using cairo drawing operations instead of the Unicode heart character.
+description = """This demo shows how to use PangoCairo to draw rotated and
+transformed text.  The right pane shows a rotated GtkLabel widget. In both
+cases, a custom PangoCairo shape renderer is installed to draw a red heard using
+cairo drawing operations instead of the Unicode heart character.
 """
 
 from gi.repository import Gtk, Pango, PangoCairo, Gdk
@@ -42,19 +44,20 @@ else:
     HEART = "♥"
     BYTES_HEART = bytes(HEART, 'utf-8')
 
+
 class RotatedTextApp:
     RADIUS = 150
     N_WORDS = 5
     FONT = "Serif 18"
 
     def __init__(self):
-    
+
         white = Gdk.RGBA()
         white.red = 1.0
         white.green = 1.0
         white.blue = 1.0
         white.alpha = 1.0
-        
+
         self.window = Gtk.Window(title="Rotated Text")
         self.window.set_default_size(4 * self.RADIUS, 2 * self.RADIUS)
         self.window.connect('destroy', Gtk.main_quit)
@@ -62,7 +65,7 @@ class RotatedTextApp:
         box = Gtk.HBox()
         box.set_homogeneous(True)
         self.window.add(box)
-        
+
         # add a drawing area
         da = Gtk.DrawingArea()
         box.add(da)
@@ -78,7 +81,7 @@ class RotatedTextApp:
 
         # Setup some fancy stuff on the label
         layout = label.get_layout()
-        
+
         PangoCairo.context_set_shape_renderer(layout.get_context(),
                                               self.fancy_shape_renderer,
                                               None)
@@ -94,7 +97,7 @@ class RotatedTextApp:
         cairo_ctx.scale(float(attr.inc_rect.width) / Pango.SCALE,
                         float(attr.inc_rect.height) / Pango.SCALE)
 
-        if int(attr.data) == 0x2665: # U+2665 BLACK HEART SUIT
+        if int(attr.data) == 0x2665:  # U+2665 BLACK HEART SUIT
             cairo_ctx.move_to(0.5, 0.0)
             cairo_ctx.line_to(0.9, -0.4)
             cairo_ctx.curve_to(1.1, -0.8, 0.5, -0.9, 0.5, -0.5)
@@ -110,21 +113,20 @@ class RotatedTextApp:
         metrics = pango_ctx.get_metrics(layout.get_font_description(),
                                         None)
         ascent = metrics.get_ascent()
-        
+
         logical_rect = Pango.Rectangle()
         logical_rect.x = 0
         logical_rect.width = ascent
         logical_rect.y = -ascent
         logical_rect.height = ascent
 
-        ink_rect = logical_rect
-
         # Set fancy shape attributes for all hearts
         attrs = Pango.AttrList()
-        p = BYTES_TEXT.find(BYTES_HEART)
 
         # FIXME: attr_shape_new_with_data isn't introspectable
         '''
+        ink_rect = logical_rect
+        p = BYTES_TEXT.find(BYTES_HEART)
         while (p != -1):
             attr = Pango.attr_shape_new_with_data(ink_rect,
                                                   logical_rect,
@@ -137,8 +139,8 @@ class RotatedTextApp:
         attrs.insert(attr)
         '''
         return attrs
-        
-    def rotated_text_draw (self, da, cairo_ctx):
+
+    def rotated_text_draw(self, da, cairo_ctx):
         # Create a cairo context and set up a transformation matrix so that the user
         # space coordinates for the centered square where we draw are [-RADIUS, RADIUS],
         # [-RADIUS, RADIUS].
@@ -147,14 +149,13 @@ class RotatedTextApp:
         height = da.get_allocated_height()
         device_radius = min(width, height) / 2.0
         cairo_ctx.translate(
-                   device_radius + (width - 2 * device_radius) / 2,
-                   device_radius + (height - 2 * device_radius) / 2)
-        cairo_ctx.scale(device_radius / self.RADIUS, 
+            device_radius + (width - 2 * device_radius) / 2,
+            device_radius + (height - 2 * device_radius) / 2)
+        cairo_ctx.scale(device_radius / self.RADIUS,
                         device_radius / self.RADIUS)
 
         # Create a subtle gradient source and use it.
-        pattern = cairo.LinearGradient(-self.RADIUS, -self.RADIUS, 
-                                        self.RADIUS,  self.RADIUS)
+        pattern = cairo.LinearGradient(-self.RADIUS, -self.RADIUS, self.RADIUS, self.RADIUS)
         pattern.add_color_stop_rgb(0.0, 0.5, 0.0, 0.0)
         pattern.add_color_stop_rgb(1.0, 0.0, 0.0, 0.5)
         cairo_ctx.set_source(pattern)
@@ -162,8 +163,8 @@ class RotatedTextApp:
         # Create a PangoContext and set up our shape renderer
         context = da.create_pango_context()
         PangoCairo.context_set_shape_renderer(context,
-                                               self.fancy_shape_renderer,
-                                               None)
+                                              self.fancy_shape_renderer,
+                                              None)
 
         # Create a PangoLayout, set the text, font, and attributes */
         layout = Pango.Layout(context=context)
@@ -178,18 +179,19 @@ class RotatedTextApp:
         for i in range(self.N_WORDS):
             # Inform Pango to re-layout the text with the new transformation matrix
             PangoCairo.update_layout(cairo_ctx, layout)
-    
+
             width, height = layout.get_pixel_size()
             cairo_ctx.move_to(-width / 2, -self.RADIUS * 0.9)
             PangoCairo.show_layout(cairo_ctx, layout)
 
             # Rotate for the next turn
-            cairo_ctx.rotate(math.pi*2 / self.N_WORDS)
-  
+            cairo_ctx.rotate(math.pi * 2 / self.N_WORDS)
+
         return False
 
+
 def main(demoapp=None):
-    app = RotatedTextApp()
+    RotatedTextApp()
     Gtk.main()
 
 if __name__ == '__main__':

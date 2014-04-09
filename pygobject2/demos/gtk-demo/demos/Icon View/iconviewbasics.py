@@ -20,14 +20,16 @@
 # USA
 
 title = "Icon View Basics"
-description = """
-The GtkIconView widget is used to display and manipulate icons. It uses a GtkTreeModel for data storage, so the list store example might be helpful.
-We also use the Gio.File API to get the icons for each file type.
- """
+description = """The GtkIconView widget is used to display and manipulate
+icons. It uses a GtkTreeModel for data storage, so the list store example might
+be helpful. We also use the Gio.File API to get the icons for each file type.
+"""
+
 
 import os
-from gi.repository import GLib, Gtk, Gio, GdkPixbuf
-import glib
+
+from gi.repository import GLib, Gio, GdkPixbuf, Gtk
+
 
 class IconViewApp:
     (COL_PATH,
@@ -98,12 +100,12 @@ class IconViewApp:
         self.window.show_all()
 
     def sort_func(self, store, a_iter, b_iter, user_data):
-        (a_name, a_is_dir) = store.get(a_iter, 
-                                       self.COL_DISPLAY_NAME, 
+        (a_name, a_is_dir) = store.get(a_iter,
+                                       self.COL_DISPLAY_NAME,
                                        self.COL_IS_DIRECTORY)
 
-        (b_name, b_is_dir) = store.get(b_iter, 
-                                       self.COL_DISPLAY_NAME, 
+        (b_name, b_is_dir) = store.get(b_iter,
+                                       self.COL_DISPLAY_NAME,
                                        self.COL_IS_DIRECTORY)
 
         if a_name is None:
@@ -152,8 +154,7 @@ class IconViewApp:
 
         # set sort column and function
         store.set_default_sort_func(self.sort_func)
-        store.set_sort_column_id(-1,
-                                 Gtk.SortType.ASCENDING)
+        store.set_sort_column_id(-1, Gtk.SortType.ASCENDING)
 
         return store
 
@@ -189,7 +190,7 @@ class IconViewApp:
                 try:
                     pixbuf = icon_theme.load_icon(name, 64, 0)
                     break
-                except glib.GError:
+                except GLib.GError:
                     pass
 
             self.pixbuf_lookup[gicon] = pixbuf
@@ -210,8 +211,9 @@ class IconViewApp:
             pixbuf = self.file_to_icon_pixbuf(path)
             store.append((path, name, pixbuf, is_dir))
 
+
 def main(demoapp=None):
-    app = IconViewApp(demoapp)
+    IconViewApp(demoapp)
     Gtk.main()
 
 if __name__ == '__main__':

@@ -1,11 +1,13 @@
 title = "Test Demo"
 description = "Dude this is a test"
-is_fully_bound = True
+
 
 from gi.repository import Gtk
 
+
 def _quit(*args):
     Gtk.main_quit()
+
 
 def main(demoapp=None):
     window = Gtk.Window()

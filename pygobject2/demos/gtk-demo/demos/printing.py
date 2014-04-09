@@ -25,25 +25,24 @@ GtkPrintOperation offers a simple API to support printing in a cross-platform wa
 """
 
 from gi.repository import Gtk, GLib, Pango, PangoCairo
-import cairo
 import math
 import os
-from os import path
+
 
 class PrintingApp:
-    HEADER_HEIGHT = 10*72/25.4
-    HEADER_GAP = 3*72/25.4
-    
+    HEADER_HEIGHT = 10 * 72 / 25.4
+    HEADER_GAP = 3 * 72 / 25.4
+
     def __init__(self):
         self.operation = Gtk.PrintOperation()
-        print_data = {'filename': 'printing.py',
+        print_data = {'filename': os.path.abspath(__file__),
                       'font_size': 12.0,
                       'lines_per_page': 0,
                       'lines': None,
                       'num_lines': 0,
                       'num_pages': 0
                      }
-                     
+
         self.operation.connect('begin-print', self.begin_print, print_data)
         self.operation.connect('draw-page', self.draw_page, print_data)
         self.operation.connect('end-print', self.end_print, print_data)
@@ -64,49 +63,54 @@ class PrintingApp:
         else:
             ext = '.pdf'
 
-        uri = "file://%s/gtk-demo%s" % (dir, ext);
+        uri = "file://%s/gtk-demo%s" % (dir, ext)
         settings.set(Gtk.PRINT_SETTINGS_OUTPUT_URI, uri)
         self.operation.set_print_settings(settings)
 
-        try:
-            self.operation.run(Gtk.PrintOperationAction.PRINT_DIALOG, None)
-        except GLib.Error as e:
-            dialog = Gtk.MessageDialog(None,
+    def run(self, parent=None):
+        result = self.operation.run(Gtk.PrintOperationAction.PRINT_DIALOG, parent)
+
+        if result == Gtk.PrintOperationResult.ERROR:
+            message = self.operation.get_error()
+
+            dialog = Gtk.MessageDialog(parent,
                                        0,
                                        Gtk.MessageType.ERROR,
                                        Gtk.ButtonsType.CLOSE,
-                                       e.message)
- 
+                                       message)
+
             dialog.run()
             dialog.destroy()
+
+        Gtk.main_quit()
 
     def begin_print(self, operation, print_ctx, print_data):
         height = print_ctx.get_height() - self.HEADER_HEIGHT - self.HEADER_GAP
         print_data['lines_per_page'] = \
             math.floor(height / print_data['font_size'])
-        
-        file_path = print_data['filename']
-        if not path.isfile(file_path):
-            file_path = path.join('demos', file_path)
-            if not path.isfile:
-                raise FileNotFoundError()
 
-        # in reality you should most likely not read the entire 
+        file_path = print_data['filename']
+        if not os.path.isfile(file_path):
+            file_path = os.path.join('demos', file_path)
+            if not os.path.isfile:
+                raise Exception("file not found: " % (file_path, ))
+
+        # in reality you should most likely not read the entire
         # file into a buffer
         source_file = open(file_path, 'r')
         s = source_file.read()
         print_data['lines'] = s.split('\n')
-        
+
         print_data['num_lines'] = len(print_data['lines'])
         print_data['num_pages'] = \
             (print_data['num_lines'] - 1) / print_data['lines_per_page'] + 1
-            
+
         operation.set_n_pages(print_data['num_pages'])
 
     def draw_page(self, operation, print_ctx, page_num, print_data):
         cr = print_ctx.get_cairo_context()
         width = print_ctx.get_width()
-        
+
         cr.rectangle(0, 0, width, self.HEADER_HEIGHT)
         cr.set_source_rgb(0.8, 0.8, 0.8)
         cr.fill_preserve()
@@ -121,14 +125,14 @@ class PrintingApp:
 
         layout.set_text(print_data['filename'], -1)
         (text_width, text_height) = layout.get_pixel_size()
-        
+
         if text_width > width:
             layout.set_width(width)
-            layout.set_ellipsize(Pango.EllipsizeType.START);
-            (text_width, text_height) = layout.get_pixel_size(layout)
+            layout.set_ellipsize(Pango.EllipsizeMode.START)
+            (text_width, text_height) = layout.get_pixel_size()
 
-        cr.move_to ((width - text_width) / 2,
-                    (self.HEADER_HEIGHT - text_height) / 2)
+        cr.move_to((width - text_width) / 2,
+                   (self.HEADER_HEIGHT - text_height) / 2)
         PangoCairo.show_layout(cr, layout)
 
         page_str = "%d/%d" % (page_num + 1, print_data['num_pages'])
@@ -136,9 +140,9 @@ class PrintingApp:
 
         layout.set_width(-1)
         (text_width, text_height) = layout.get_pixel_size()
-        cr.move_to(width - text_width - 4, 
+        cr.move_to(width - text_width - 4,
                    (self.HEADER_HEIGHT - text_height) / 2)
-        PangoCairo.show_layout(cr, layout);
+        PangoCairo.show_layout(cr, layout)
 
         layout = print_ctx.create_pango_layout()
 
@@ -146,7 +150,7 @@ class PrintingApp:
         desc.set_size(print_data['font_size'] * Pango.SCALE)
         layout.set_font_description(desc)
 
-        cr.move_to (0, self.HEADER_HEIGHT + self.HEADER_GAP)
+        cr.move_to(0, self.HEADER_HEIGHT + self.HEADER_GAP)
         lines_pp = int(print_data['lines_per_page'])
         num_lines = print_data['num_lines']
         data_lines = print_data['lines']
@@ -155,18 +159,20 @@ class PrintingApp:
 
         for i in range(lines_pp):
             if line >= num_lines:
-                break;
-                
+                break
+
             layout.set_text(data_lines[line], -1)
             PangoCairo.show_layout(cr, layout)
-            cr.rel_move_to (0, font_size)
+            cr.rel_move_to(0, font_size)
             line += 1
 
     def end_print(self, operation, print_ctx, print_data):
         pass
 
+
 def main(demoapp=None):
     app = PrintingApp()
+    GLib.idle_add(app.run, demoapp.window)
     Gtk.main()
 
 if __name__ == '__main__':

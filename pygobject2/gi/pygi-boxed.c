@@ -32,10 +32,6 @@ _boxed_dealloc (PyGIBoxed *self)
 {
     GType g_type;
 
-    PyObject_GC_UnTrack ( (PyObject *) self);
-
-    PyObject_ClearWeakRefs ( (PyObject *) self);
-
     if ( ( (PyGBoxed *) self)->free_on_dealloc) {
         if (self->slice_allocated) {
             g_slice_free1 (self->size, ( (PyGBoxed *) self)->boxed);
@@ -53,24 +49,19 @@ _pygi_boxed_alloc (GIBaseInfo *info, gsize *size_out)
 {
     gsize size;
 
-    /* FIXME: Remove when bgo#622711 is fixed */
-    if (g_registered_type_info_get_g_type (info) == G_TYPE_VALUE) {
-        size = sizeof (GValue);
-    } else {
-        switch (g_base_info_get_type (info)) {
-            case GI_INFO_TYPE_UNION:
-                size = g_union_info_get_size ( (GIUnionInfo *) info);
-                break;
-            case GI_INFO_TYPE_BOXED:
-            case GI_INFO_TYPE_STRUCT:
-                size = g_struct_info_get_size ( (GIStructInfo *) info);
-                break;
-            default:
-                PyErr_Format (PyExc_TypeError,
-                              "info should be Boxed or Union, not '%d'",
-                              g_base_info_get_type (info));
-                return NULL;
-        }
+    switch (g_base_info_get_type (info)) {
+        case GI_INFO_TYPE_UNION:
+            size = g_union_info_get_size ( (GIUnionInfo *) info);
+            break;
+        case GI_INFO_TYPE_BOXED:
+        case GI_INFO_TYPE_STRUCT:
+            size = g_struct_info_get_size ( (GIStructInfo *) info);
+            break;
+        default:
+            PyErr_Format (PyExc_TypeError,
+                          "info should be Boxed or Union, not '%d'",
+                          g_base_info_get_type (info));
+            return NULL;
     }
 
     if( size_out != NULL)
@@ -109,7 +100,7 @@ _boxed_new (PyTypeObject *type,
         goto out;
     }
 
-    self = (PyGIBoxed *) _pygi_boxed_new (type, boxed, TRUE);
+    self = (PyGIBoxed *) _pygi_boxed_new (type, boxed, TRUE, size);
     if (self == NULL) {
         g_slice_free1 (size, boxed);
         goto out;
@@ -138,7 +129,8 @@ PYGLIB_DEFINE_TYPE("gi.Boxed", PyGIBoxed_Type, PyGIBoxed);
 PyObject *
 _pygi_boxed_new (PyTypeObject *type,
                  gpointer      boxed,
-                 gboolean      free_on_dealloc)
+                 gboolean      free_on_dealloc,
+                 gsize         allocated_slice)
 {
     PyGIBoxed *self;
 
@@ -159,11 +151,27 @@ _pygi_boxed_new (PyTypeObject *type,
     ( (PyGBoxed *) self)->gtype = pyg_type_from_object ( (PyObject *) type);
     ( (PyGBoxed *) self)->boxed = boxed;
     ( (PyGBoxed *) self)->free_on_dealloc = free_on_dealloc;
-    self->size = 0;
-    self->slice_allocated = FALSE;
+    if (allocated_slice > 0) {
+        self->size = allocated_slice;
+        self->slice_allocated = TRUE;
+    } else {
+        self->size = 0;
+        self->slice_allocated = FALSE;
+    }
 
     return (PyObject *) self;
 }
+
+static PyObject *
+_pygi_boxed_get_free_on_dealloc(PyGIBoxed *self, void *closure)
+{
+  return PyBool_FromLong( ((PyGBoxed *)self)->free_on_dealloc );
+}
+
+static PyGetSetDef pygi_boxed_getsets[] = {
+    { "_free_on_dealloc", (getter)_pygi_boxed_get_free_on_dealloc, (setter)0 },
+    { NULL, 0, 0 }
+};
 
 void
 _pygi_boxed_register_types (PyObject *m)
@@ -174,6 +182,7 @@ _pygi_boxed_register_types (PyObject *m)
     PyGIBoxed_Type.tp_init = (initproc) _boxed_init;
     PyGIBoxed_Type.tp_dealloc = (destructor) _boxed_dealloc;
     PyGIBoxed_Type.tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE);
+    PyGIBoxed_Type.tp_getset = pygi_boxed_getsets;
 
     if (PyType_Ready (&PyGIBoxed_Type))
         return;

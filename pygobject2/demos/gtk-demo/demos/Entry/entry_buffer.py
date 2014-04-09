@@ -24,17 +24,16 @@ description = """
 Gtk.EntryBuffer provides the text content in a Gtk.Entry.
 """
 
-# See FIXME's
-is_fully_bound = True
 
 from gi.repository import Gtk
+
 
 class EntryBufferApp:
     def __init__(self):
         self.window = Gtk.Dialog('Gtk.EntryBuffer',
-                            None,
-                            0,
-                            [Gtk.STOCK_CLOSE, Gtk.ResponseType.NONE])
+                                 None,
+                                 0,
+                                 [Gtk.STOCK_CLOSE, Gtk.ResponseType.NONE])
         self.window.connect('response', self.destroy)
         self.window.connect('destroy', lambda x: Gtk.main_quit())
         self.window.set_resizable(False)
@@ -45,7 +44,7 @@ class EntryBufferApp:
 
         label = Gtk.Label()
         label.set_markup('Entries share a buffer. Typing in one is reflected in the other.')
-        vbox.pack_start (label, False, False, 0)
+        vbox.pack_start(label, False, False, 0)
 
         # create a buffer
         buffer = Gtk.EntryBuffer()
@@ -65,8 +64,9 @@ class EntryBufferApp:
         self.window.destroy()
         Gtk.main_quit()
 
+
 def main(demoapp=None):
-    app = EntryBufferApp()
+    EntryBufferApp()
     Gtk.main()
 
 if __name__ == '__main__':

@@ -21,11 +21,14 @@
 
 title = "List Store"
 description = """
-The GtkListStore is used to store data in list form, to be used later on by a GtkTreeView to display it. This demo builds a simple GtkListStore and displays it. See the Stock Browser demo for a more advanced example.
+The GtkListStore is used to store data in list form, to be used later on by a
+GtkTreeView to display it. This demo builds a simple GtkListStore and displays
+it. See the Stock Browser demo for a more advanced example.
 """
 
+
 from gi.repository import Gtk, GObject
-import sys
+
 
 class Bug:
     def __init__(self, is_fixed, number, severity, description):
@@ -35,20 +38,21 @@ class Bug:
         self.description = description
 
 # initial data we use to fill in the store
-data = [Bug(False, 60482, "Normal",     "scrollable notebooks and hidden tabs"),
-        Bug(False, 60620, "Critical",   "gdk_window_clear_area (gdkwindow-win32.c) is not thread-safe"),
-        Bug(False, 50214, "Major",      "Xft support does not clean up correctly"),
-        Bug(True,  52877, "Major",      "GtkFileSelection needs a refresh method. "),
-        Bug(False, 56070, "Normal",     "Can't click button after setting in sensitive"),
-        Bug(True,  56355, "Normal",     "GtkLabel - Not all changes propagate correctly"),
-        Bug(False, 50055, "Normal",     "Rework width/height computations for TreeView"),
-        Bug(False, 58278, "Normal",     "gtk_dialog_set_response_sensitive () doesn't work"),
-        Bug(False, 55767, "Normal",     "Getters for all setters"),
-        Bug(False, 56925, "Normal",     "Gtkcalender size"),
-        Bug(False, 56221, "Normal",     "Selectable label needs right-click copy menu"),
-        Bug(True,  50939, "Normal",     "Add shift clicking to GtkTextView"),
-        Bug(False, 6112,  "Enhancement","netscape-like collapsable toolbars"),
-        Bug(False, 1,     "Normal",     "First bug :=)")]
+data = [Bug(False, 60482, "Normal", "scrollable notebooks and hidden tabs"),
+        Bug(False, 60620, "Critical", "gdk_window_clear_area (gdkwindow-win32.c) is not thread-safe"),
+        Bug(False, 50214, "Major", "Xft support does not clean up correctly"),
+        Bug(True, 52877, "Major", "GtkFileSelection needs a refresh method. "),
+        Bug(False, 56070, "Normal", "Can't click button after setting in sensitive"),
+        Bug(True, 56355, "Normal", "GtkLabel - Not all changes propagate correctly"),
+        Bug(False, 50055, "Normal", "Rework width/height computations for TreeView"),
+        Bug(False, 58278, "Normal", "gtk_dialog_set_response_sensitive () doesn't work"),
+        Bug(False, 55767, "Normal", "Getters for all setters"),
+        Bug(False, 56925, "Normal", "Gtkcalender size"),
+        Bug(False, 56221, "Normal", "Selectable label needs right-click copy menu"),
+        Bug(True, 50939, "Normal", "Add shift clicking to GtkTextView"),
+        Bug(False, 6112, "Enhancement", "netscape-like collapsable toolbars"),
+        Bug(False, 1, "Normal", "First bug :=)")]
+
 
 class ListStoreApp:
     (COLUMN_FIXED,
@@ -88,9 +92,9 @@ class ListStoreApp:
 
         self.window.set_default_size(280, 250)
         self.window.show_all()
-        
+
         self.window.connect('delete-event', self.window_closed)
-        self.timeout = GObject.timeout_add (80, self.spinner_timeout)
+        self.timeout = GObject.timeout_add(80, self.spinner_timeout)
 
     def window_closed(self, window, event):
         if self.timeout != 0:
@@ -99,7 +103,7 @@ class ListStoreApp:
     def spinner_timeout(self):
         if self.model is None:
             return False
-            
+
         iter_ = self.model.get_iter_first()
         pulse = self.model.get(iter_, self.COLUMN_PULSE)[0]
         if pulse == 999999999:
@@ -121,7 +125,7 @@ class ListStoreApp:
                                    str,
                                    bool,
                                    bool)
-        
+
         col = 0
         for bug in data:
             if col == 1 or col == 3:
@@ -145,7 +149,7 @@ class ListStoreApp:
 
     def add_columns(self, treeview):
         model = treeview.get_model()
-        
+
         # column for is_fixed toggle
         renderer = Gtk.CellRendererToggle()
         renderer.connect('toggled', self.is_fixed_toggled, model)
@@ -197,8 +201,9 @@ class ListStoreApp:
 
         model.set_value(iter_, self.COLUMN_FIXED, is_fixed)
 
+
 def main(demoapp=None):
-    app = ListStoreApp()
+    ListStoreApp()
     Gtk.main()
 
 if __name__ == '__main__':

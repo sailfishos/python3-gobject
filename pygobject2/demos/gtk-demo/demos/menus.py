@@ -20,13 +20,26 @@
 # USA
 
 title = "Menus"
-description = """There are several widgets involved in displaying menus. The GtkMenuBar widget is a menu bar, which normally appears horizontally at the top of an application, but can also be layed out vertically. The GtkMenu widget is the actual menu that pops up. Both GtkMenuBar and GtkMenu are subclasses of GtkMenuShell; a GtkMenuShell contains menu items (GtkMenuItem). Each menu item contains text and/or images and can be selected by the user.
-There are several kinds of menu item, including plain GtkMenuItem, GtkCheckMenuItem which can be checked/unchecked, GtkRadioMenuItem which is a check menu item that's in a mutually exclusive group, GtkSeparatorMenuItem which is a separator bar, GtkTearoffMenuItem which allows a GtkMenu to be torn off, and GtkImageMenuItem which can place a GtkImage or other widget next to the menu text.
-A GtkMenuItem can have a submenu, which is simply a GtkMenu to pop up when the menu item is selected. Typically, all menu items in a menu bar have submenus.
-GtkUIManager provides a higher-level interface for creating menu bars and menus; while you can construct menus manually, most people don't do that. There's a separate demo for GtkUIManager.
+description = """There are several widgets involved in displaying menus. The
+GtkMenuBar widget is a menu bar, which normally appears horizontally at the top
+of an application, but can also be layed out vertically. The GtkMenu widget is
+the actual menu that pops up. Both GtkMenuBar and GtkMenu are subclasses of
+GtkMenuShell; a GtkMenuShell contains menu items (GtkMenuItem). Each menu item
+contains text and/or images and can be selected by the user. There are several
+kinds of menu item, including plain GtkMenuItem, GtkCheckMenuItem which can be
+checked/unchecked, GtkRadioMenuItem which is a check menu item that's in a
+mutually exclusive group, GtkSeparatorMenuItem which is a separator bar,
+GtkTearoffMenuItem which allows a GtkMenu to be torn off, and GtkImageMenuItem
+which can place a GtkImage or other widget next to the menu text. A GtkMenuItem
+can have a submenu, which is simply a GtkMenu to pop up when the menu item is
+selected. Typically, all menu items in a menu bar have submenus. GtkUIManager
+provides a higher-level interface for creating menu bars and menus; while you
+can construct menus manually, most people don't do that. There's a separate demo
+for GtkUIManager.
 """
 
 from gi.repository import Gtk
+
 
 class MenusApp:
     def __init__(self):
@@ -46,8 +59,6 @@ class MenusApp:
 
         menubar = Gtk.MenuBar()
         box1.pack_start(menubar, False, True, 0)
-
-        menu = self.create_menu(2, True)
 
         menuitem = Gtk.MenuItem(label='test\nline2')
         menuitem.set_submenu(self.create_menu(3, True))
@@ -78,7 +89,6 @@ class MenusApp:
             return None
 
         menu = Gtk.Menu()
-        group = None
 
         if tearoff:
             menuitem = Gtk.TearoffMenuItem()
@@ -114,8 +124,9 @@ class MenusApp:
         else:
             menubar.props.pack_direction = Gtk.PackDirection.LTR
 
+
 def main(demoapp=None):
-    app = MenusApp()
+    MenusApp()
     Gtk.main()
 
 if __name__ == '__main__':

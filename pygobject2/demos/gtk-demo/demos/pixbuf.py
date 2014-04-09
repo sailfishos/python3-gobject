@@ -20,21 +20,22 @@
 # USA
 
 title = "Pixbufs"
-description = """A GdkPixbuf represents an image, normally in RGB or RGBA format. Pixbufs are normally used to load files from disk and perform image scaling.
- It also shows off how to use GtkDrawingArea to do a simple animation.
+description = """A GdkPixbuf represents an image, normally in RGB or RGBA
+format. Pixbufs are normally used to load files from disk and perform image
+scaling. It also shows off how to use GtkDrawingArea to do a simple animation.
 Look at the Image demo for additional pixbuf usage examples.
 """
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
 import os
 import math
-from os import path
+
 
 class PixbufApp:
     FRAME_DELAY = 50
     BACKGROUND_NAME = "background.jpg"
     CYCLE_LEN = 60
-    
+
     def __init__(self):
         self.background_width = 0
         self.background_height = 0
@@ -65,15 +66,15 @@ class PixbufApp:
                                        Gtk.MessageType.ERROR,
                                        Gtk.ButtonsType.CLOSE,
                                        e.message)
- 
+
             dialog.run()
             dialog.destroy()
             Gtk.main_quit()
-        
+
         self.window.set_size_request(self.background_width,
                                      self.background_height)
-        self.frame = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, 
-                                          False, 
+        self.frame = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB,
+                                          False,
                                           8,
                                           self.background_width,
                                           self.background_height)
@@ -82,19 +83,17 @@ class PixbufApp:
         self.window.add(self.da)
         self.timeout_id = GObject.timeout_add(self.FRAME_DELAY, self.timeout_cb)
         self.window.show_all()
-        
-    def load_pixbufs(self):
-        base_path = 'data'
-        if not path.isdir(base_path):
-            base_path = path.join('demos', base_path)
 
-        img_path = path.join(base_path, self.BACKGROUND_NAME)
+    def load_pixbufs(self):
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        base_path = os.path.join(base_path, 'data')
+        img_path = os.path.join(base_path, self.BACKGROUND_NAME)
         self.background_pixbuf = GdkPixbuf.Pixbuf.new_from_file(img_path)
         self.background_height = self.background_pixbuf.get_height()
         self.background_width = self.background_pixbuf.get_width()
 
         for img_name in self.image_names:
-            img_path = path.join(base_path, img_name)
+            img_path = os.path.join(base_path, img_name)
             self.pixbufs.append(GdkPixbuf.Pixbuf.new_from_file(img_path))
 
     def draw_cb(self, da, cairo_ctx):
@@ -127,10 +126,10 @@ class PixbufApp:
             iw = pb.get_width()
             ih = pb.get_height()
 
-            r = radius + (radius / 3.0) * math.sin(f * 2.0 * math.pi);
+            r = radius + (radius / 3.0) * math.sin(f * 2.0 * math.pi)
 
-            xpos = math.floor (xmid + r * math.cos(ang) - iw / 2.0 + 0.5)
-            ypos = math.floor (ymid + r * math.sin(ang) - ih / 2.0 + 0.5)
+            xpos = math.floor(xmid + r * math.cos(ang) - iw / 2.0 + 0.5)
+            ypos = math.floor(ymid + r * math.sin(ang) - ih / 2.0 + 0.5)
 
             if i & 1:
                 k = math.sin(f * 2.0 * math.pi)
@@ -174,9 +173,10 @@ class PixbufApp:
     def cleanup_cb(self, widget):
         GObject.source_remove(self.timeout_id)
         Gtk.main_quit()
-            
+
+
 def main(demoapp=None):
-    app = PixbufApp()
+    PixbufApp()
     Gtk.main()
 
 if __name__ == '__main__':

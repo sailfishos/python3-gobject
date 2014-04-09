@@ -29,9 +29,10 @@
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 
-#if ENABLE_INTROSPECTION
-
 #include <girepository.h>
+#include "pygi-cache.h"
+
+extern PyObject *PyGIDeprecationWarning;
 
 typedef struct {
     PyObject_HEAD
@@ -42,7 +43,21 @@ typedef struct {
     PyObject_HEAD
     GIBaseInfo *info;
     PyObject *inst_weakreflist;
+    PyGICallableCache *cache;
 } PyGIBaseInfo;
+
+typedef struct {
+    PyGIBaseInfo base;
+
+    /* Reference the unbound version of this struct.
+     * We use this for the actual call to invoke because it manages the cache.
+     */
+    struct PyGICallableInfo *py_unbound_info;
+
+    /* Holds bound argument for instance, class, and vfunc methods. */
+    PyObject *py_bound_arg;
+
+} PyGICallableInfo;
 
 typedef struct {
     PyGPointer base;
@@ -55,23 +70,34 @@ typedef struct {
     gsize size;
 } PyGIBoxed;
 
-typedef PyObject * (*PyGIArgOverrideToGIArgumentFunc) (PyObject       *value,
-                                                      GITypeInfo     *type_info,
-                                                      GITransfer      transfer,
-                                                      GIArgument      *arg);
-typedef PyObject * (*PyGIArgOverrideFromGIArgumentFunc) (GITypeInfo *type_info,
-                                                         gpointer    data);
+typedef struct {
+    PyObject_HEAD
+    GCallback callback;
+    GIFunctionInfo *info;
+    gpointer user_data;
+    GIScopeType scope;
+    GDestroyNotify destroy_notify_func;
+    PyGICallableCache *cache;
+} PyGICCallback;
+
+typedef PyObject * (*PyGIArgOverrideToGIArgumentFunc) (PyObject        *value,
+                                                       GIInterfaceInfo *interface_info,
+                                                       GITransfer       transfer,
+                                                       GIArgument      *arg);
+typedef PyObject * (*PyGIArgOverrideFromGIArgumentFunc) (GIInterfaceInfo *interface_info,
+                                                         gpointer         data);
 typedef PyObject * (*PyGIArgOverrideReleaseFunc) (GITypeInfo *type_info,
                                                   gpointer  struct_);
 
 struct PyGI_API {
     PyObject* (*type_import_by_g_type) (GType g_type);
     PyObject* (*get_property_value) (PyGObject *instance,
-                                     const gchar *attr_name);
+                                     GParamSpec *pspec);
     gint (*set_property_value) (PyGObject *instance,
-                                const gchar *attr_name,
+                                GParamSpec *pspec,
                                 PyObject *value);
     GClosure * (*signal_closure_new) (PyGObject *instance,
+                                      GType g_type,
                                       const gchar *sig_name,
                                       PyObject *callback,
                                       PyObject *extra_args,
@@ -88,20 +114,10 @@ static struct PyGI_API *PyGI_API = NULL;
 static int
 _pygi_import (void)
 {
-    PyObject *modules_dict;
-
     if (PyGI_API != NULL) {
         return 1;
     }
-
-    modules_dict = PyImport_GetModuleDict(); /* borrowed reference -- don't unref */
-    if (PyMapping_HasKeyString(modules_dict, "gi")) {
-#if PY_VERSION_HEX >= 0x03000000
-        PyGI_API = (struct PyGI_API*) PyCapsule_Import("gi._API", FALSE);
-#else
-        PyGI_API = (struct PyGI_API*) PyCObject_Import("gi", "_API");
-#endif
-    }
+    PyGI_API = (struct PyGI_API*) PyCapsule_Import("gi._API", FALSE);
     if (PyGI_API == NULL) {
         return -1;
     }
@@ -120,27 +136,28 @@ pygi_type_import_by_g_type (GType g_type)
 
 static inline PyObject *
 pygi_get_property_value (PyGObject *instance,
-                         const gchar *attr_name)
+                         GParamSpec *pspec)
 {
     if (_pygi_import() < 0) {
         return NULL;
     }
-    return PyGI_API->get_property_value(instance, attr_name);
+    return PyGI_API->get_property_value(instance, pspec);
 }
 
 static inline gint
 pygi_set_property_value (PyGObject *instance,
-                         const gchar *attr_name,
+                         GParamSpec *pspec,
                          PyObject *value)
 {
     if (_pygi_import() < 0) {
         return -1;
     }
-    return PyGI_API->set_property_value(instance, attr_name, value);
+    return PyGI_API->set_property_value(instance, pspec, value);
 }
 
 static inline GClosure *
 pygi_signal_closure_new (PyGObject *instance,
+                         GType g_type,
                          const gchar *sig_name,
                          PyObject *callback,
                          PyObject *extra_args,
@@ -149,7 +166,7 @@ pygi_signal_closure_new (PyGObject *instance,
     if (_pygi_import() < 0) {
         return NULL;
     }
-    return PyGI_API->signal_closure_new(instance, sig_name, callback, extra_args, swap_data);
+    return PyGI_API->signal_closure_new(instance, g_type, sig_name, callback, extra_args, swap_data);
 }
 
 static inline PyObject *
@@ -169,40 +186,5 @@ pygi_register_foreign_struct (const char* namespace_,
                                       release_func);
     Py_RETURN_NONE;
 }
-
-#else /* ENABLE_INTROSPECTION */
-
-static inline PyObject *
-pygi_type_import_by_g_type (GType g_type)
-{
-    return NULL;
-}
-
-static inline PyObject *
-pygi_get_property_value (PyGObject *instance,
-                         const gchar *attr_name)
-{
-    return NULL;
-}
-
-static inline gint
-pygi_set_property_value (PyGObject *instance,
-                         const gchar *attr_name,
-                         PyObject *value)
-{
-    return -1;
-}
-
-static inline GClosure *
-pygi_signal_closure_new (PyGObject *instance,
-                         const gchar *sig_name,
-                         PyObject *callback,
-                         PyObject *extra_args,
-                         PyObject *swap_data)
-{
-    return NULL;
-}
-
-#endif /* ENABLE_INTROSPECTION */
 
 #endif /* __PYGI_H__ */

@@ -34,10 +34,6 @@ _struct_dealloc (PyGIStruct *self)
                            (PyObject *) self,
                            &PyGIStructInfo_Type);
 
-    PyObject_GC_UnTrack ( (PyObject *) self);
-
-    PyObject_ClearWeakRefs ( (PyObject *) self);
-
     if (info != NULL && g_struct_info_is_foreign ( (GIStructInfo *) info)) {
         pygi_struct_foreign_release (info, ( (PyGPointer *) self)->pointer);
     } else if (self->free_on_dealloc) {
@@ -74,6 +70,13 @@ _struct_new (PyTypeObject *type,
     }
 
     size = g_struct_info_get_size ( (GIStructInfo *) info);
+    if (size == 0) {
+        PyErr_Format (PyExc_TypeError,
+            "cannot allocate disguised struct %s.%s; consider adding a constructor to the library or to the overrides",
+            g_base_info_get_namespace (info),
+            g_base_info_get_name (info));
+        goto out;
+    }
     pointer = g_try_malloc0 (size);
     if (pointer == NULL) {
         PyErr_NoMemory();

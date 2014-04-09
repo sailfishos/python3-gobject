@@ -26,6 +26,7 @@ Info bar widgets are used to report important messages to the user.
 
 from gi.repository import Gtk
 
+
 class InfobarApp:
     def __init__(self):
         self.window = Gtk.Window()
@@ -91,8 +92,9 @@ class InfobarApp:
         dialog.run()
         dialog.destroy()
 
+
 def main(demoapp=None):
-    app = InfobarApp()
+    InfobarApp()
     Gtk.main()
 
 if __name__ == '__main__':

@@ -28,13 +28,13 @@ that is not in the list of options.
 How the options are displayed is controlled by cell renderers.
  """
 
-# See FIXME's
-is_fully_bound = False
 
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
+
 
 (PIXBUF_COL,
  TEXT_COL) = range(2)
+
 
 class MaskEntry(Gtk.Entry):
     __gtype_name__ = 'MaskEntry'
@@ -66,6 +66,7 @@ class MaskEntry(Gtk.Entry):
 
     def changed_cb(self, entry):
         self.set_background()
+
 
 class ComboboxApp:
     def __init__(self, demoapp):
@@ -122,7 +123,9 @@ class ComboboxApp:
         combo.add_attribute(renderer, 'text', 0)
         combo.set_cell_data_func(renderer, self.is_capital_sensistive, None)
 
-        path = Gtk.TreePath('0:8')
+        # FIXME: make new_from_indices work
+        #        make constructor take list or string of indices
+        path = Gtk.TreePath.new_from_string('0:8')
         treeiter = model.get_iter(path)
         combo.set_active_iter(treeiter)
 
@@ -322,15 +325,15 @@ class ComboboxApp:
         sensitive = not tree_model.iter_has_child(treeiter)
         cell.set_property('sensitive', sensitive)
 
-
     def fill_combo_entry(self, entry):
         entry.append_text('One')
         entry.append_text('Two')
         entry.append_text('2\302\275')
         entry.append_text('Three')
 
+
 def main(demoapp=None):
-    app = ComboboxApp(demoapp)
+    ComboboxApp(demoapp)
     Gtk.main()
 
 if __name__ == '__main__':

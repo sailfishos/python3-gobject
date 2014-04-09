@@ -24,19 +24,22 @@ description = """
 Demonstrates a typical application window with menubar, toolbar, statusbar.
 """
 
-from gi.repository import Gtk, GdkPixbuf, Gdk
-import sys, os
-import glib
+import os
 
-global infobar
-global window
-global messagelabel
-global _demoapp
+from gi.repository import GdkPixbuf, Gtk
+
+
+infobar = None
+window = None
+messagelabel = None
+_demoapp = None
+
 
 def widget_destroy(widget, button):
     widget.destroy()
 
-def activate_action(action, user_data):
+
+def activate_action(action, user_data=None):
     global window
 
     name = action.get_name()
@@ -47,16 +50,17 @@ def activate_action(action, user_data):
         settings.set_property('gtk-application-prefer-dark-theme', value)
         return
 
-
-    dialog = Gtk.MessageDialog(parent=window,
-                               message_type=Gtk.MessageType.INFO,
+    dialog = Gtk.MessageDialog(message_type=Gtk.MessageType.INFO,
                                buttons=Gtk.ButtonsType.CLOSE,
                                text='You activated action: "%s" of type %s' % (name, _type))
 
+    # FIXME: this should be done in the constructor
+    dialog.set_transient_for(window)
     dialog.connect('response', widget_destroy)
     dialog.show()
 
-def activate_radio_action(action, current, user_data):
+
+def activate_radio_action(action, current, user_data=None):
     global infobar
     global messagelabel
 
@@ -70,6 +74,7 @@ def activate_radio_action(action, current, user_data):
         infobar.set_message_type(Gtk.MessageType(value))
         infobar.show()
 
+
 def update_statusbar(buffer, statusbar):
     statusbar.pop(0)
     count = buffer.get_char_count()
@@ -81,19 +86,21 @@ def update_statusbar(buffer, statusbar):
 
     statusbar.push(0, msg)
 
+
 def mark_set_callback(buffer, new_location, mark, data):
     update_statusbar(buffer, data)
 
-def about_cb(widget, data):
+
+def about_cb(widget, user_data=None):
     global window
 
     authors = ['John (J5) Palmieri',
                'Tomeu Vizoso',
                'and many more...']
 
-    documentors =  ['David Malcolm',
-                    'Zack Goldberg',
-                    'and many more...']
+    documentors = ['David Malcolm',
+                   'Zack Goldberg',
+                   'and many more...']
 
     license = """
 This library is free software; you can redistribute it and/or
@@ -111,29 +118,26 @@ License along with the Gnome Library; see the file COPYING.LIB.  If not,
 write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
-    filename = os.path.join('data', 'gtk-logo-rgb.gif')
-    try:
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
-    except glib.GError:
-        filename = os.path.join('demos', filename)
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
-
+    dirname = os.path.abspath(os.path.dirname(__file__))
+    filename = os.path.join(dirname, 'data', 'gtk-logo-rgb.gif')
+    pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
     transparent = pixbuf.add_alpha(True, 0xff, 0xff, 0xff)
-    about = Gtk.AboutDialog(
-                parent=window, 
-                program_name='GTK+ Code Demos',
-			    version='0.1',
-			    copyright='(C) 2010 The PyGI Team',
-			    license=license,
-			    website='http://live.gnome.org/PyGI',
-			    comments='Program to demonstrate PyGI functions.',
-			    authors=authors,
-			    documenters=documentors,
-			    logo=transparent,
-			    title='About GTK+ Code Demos')
+
+    about = Gtk.AboutDialog(parent=window,
+                            program_name='GTK+ Code Demos',
+                            version='0.1',
+                            copyright='(C) 2010 The PyGI Team',
+                            license=license,
+                            website='http://live.gnome.org/PyGI',
+                            comments='Program to demonstrate PyGI functions.',
+                            authors=authors,
+                            documenters=documentors,
+                            logo=transparent,
+                            title='About GTK+ Code Demos')
 
     about.connect('response', widget_destroy)
-    about.run()
+    about.show()
+
 
 action_entries = (
     ("FileMenu", None, "_File"),                # name, stock id, label
@@ -151,7 +155,7 @@ action_entries = (
      "Open first file",                         # tooltip
      activate_action),
     ("Save", Gtk.STOCK_SAVE,                    # name, stock id
-     "_Save","<control>S",                      # label, accelerator
+     "_Save", "<control>S",                     # label, accelerator
      "Save current file",                       # tooltip
      activate_action),
     ("SaveAs", Gtk.STOCK_SAVE,                  # name, stock id
@@ -208,13 +212,13 @@ color_action_entries = (
 shape_action_entries = (
     ("Square", None,                            # name, stock id
      "_Square", "<control>S",                   # label, accelerator
-     "Square",  SHAPE_SQUARE),                  # tooltip, value
+     "Square", SHAPE_SQUARE),                   # tooltip, value
     ("Rectangle", None,                         # name, stock id
      "_Rectangle", "<control>R",                # label, accelerator
      "Rectangle", SHAPE_RECTANGLE),             # tooltip, value
     ("Oval", None,                              # name, stock id
      "_Oval", "<control>O",                     # label, accelerator
-     "Egg", SHAPE_OVAL ),                       # tooltip, value
+     "Egg", SHAPE_OVAL),                        # tooltip, value
 )
 
 ui_info = """
@@ -259,8 +263,10 @@ ui_info = """
 </ui>
 """
 
+
 def _quit(*args):
     Gtk.main_quit()
+
 
 def register_stock_icons():
     """
@@ -279,6 +285,7 @@ def register_stock_icons():
 
     Gtk.stock_add(item, 1)
     '''
+    global _demoapp
 
     factory = Gtk.IconFactory()
     factory.add_default()
@@ -294,10 +301,13 @@ def register_stock_icons():
 
     factory.add('demo-gtk-logo', icon_set)
 
+
 class ToolMenuAction(Gtk.Action):
     __gtype_name__ = "GtkToolMenuAction"
+
     def do_create_tool_item(self):
         return Gtk.MenuToolButton()
+
 
 def main(demoapp=None):
     global infobar
@@ -319,10 +329,10 @@ def main(demoapp=None):
     window.add(table)
 
     action_group = Gtk.ActionGroup(name='AppWindowActions')
-    open_action = ToolMenuAction(name = 'Open',
-                             stock_id = Gtk.STOCK_OPEN,
-                             label = '_Open',
-                             tooltip = 'Open a file')
+    open_action = ToolMenuAction(name='Open',
+                                 stock_id=Gtk.STOCK_OPEN,
+                                 label='_Open',
+                                 tooltip='Open a file')
 
     action_group.add_action(open_action)
     action_group.add_actions(action_entries)
@@ -352,8 +362,7 @@ def main(demoapp=None):
                  Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
                  0, 0, 0)
 
-
-    infobar = Gtk.InfoBar();
+    infobar = Gtk.InfoBar()
     infobar.set_no_show_all(True)
     messagelabel = Gtk.Label()
     messagelabel.show()
@@ -388,7 +397,7 @@ def main(demoapp=None):
     buffer.connect('changed', update_statusbar, statusbar)
     buffer.connect('mark_set', mark_set_callback, statusbar)
 
-    update_statusbar(buffer, statusbar);
+    update_statusbar(buffer, statusbar)
 
     window.set_default_size(200, 200)
     window.show_all()
