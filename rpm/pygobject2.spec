@@ -1,18 +1,16 @@
 Name: pygobject2
-Version: 3.10.2
+Version: 3.24.1
 Release: 1
 License: LGPLv2+
 Group: Development/Languages
 Summary: Python 2 bindings for GObject 
 URL: https://git.gnome.org/browse/pygobject
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Source: %{name}-%{version}.tar.bz2
-
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(python2)
 BuildRequires: pkgconfig(cairo-gobject)
-BuildRequires: pkgconfig(pycairo)
+BuildRequires: pkgconfig(pycairo) >= 1.11.1
 BuildRequires: gnome-common
 
 %description
@@ -27,14 +25,13 @@ Requires: %{name}-codegen = %{version}-%{release}
 Requires: %{name}-doc = %{version}-%{release}
 Requires: glib2-devel
 Requires: python2-devel
-Requires: pkgconfig
 
 %description devel
 This package contains files required to build wrappers for %{name}-based
 libraries such as pygtk2.
 
 %prep
-%setup -q -n %{name}-%{version}/%{name}
+%setup -q -n %{name}-%{version}/upstream
 find -name '*.py' -print0 | xargs -n1 -0 sed -i '1s|^#!python|#!%{__python}|'
 
 %build
@@ -55,7 +52,6 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 
 %files
 %defattr(644, root, root, 755)
-%{_libdir}/libpyglib-gi-2.0-python.so.*
 %{python_sitearch}/gi
 %{python_sitearch}/pygtkcompat
 %{python_sitearch}/pygobject*
@@ -63,6 +59,5 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 %files devel
 %defattr(644, root, root, 755)
 %dir %{_includedir}/pygobject-3.0
-%{_includedir}/pygobject-3.0/*
+%{_includedir}/pygobject-3.0
 %{_libdir}/pkgconfig/pygobject-3.0.pc
-%{_libdir}/libpyglib-gi-2.0-python.so
