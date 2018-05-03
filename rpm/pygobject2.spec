@@ -1,5 +1,5 @@
 Name: pygobject2
-Version: 3.10.2
+Version: 3.24.1
 Release: 1
 License: LGPLv2+
 Group: Development/Languages
@@ -12,7 +12,7 @@ BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(python2)
 BuildRequires: pkgconfig(cairo-gobject)
-BuildRequires: pkgconfig(pycairo)
+BuildRequires: pkgconfig(pycairo) >= 1.11.1
 BuildRequires: gnome-common
 
 %description
@@ -34,7 +34,7 @@ This package contains files required to build wrappers for %{name}-based
 libraries such as pygtk2.
 
 %prep
-%setup -q -n %{name}-%{version}/%{name}
+%setup -q -n %{name}-%{version}/upstream
 find -name '*.py' -print0 | xargs -n1 -0 sed -i '1s|^#!python|#!%{__python}|'
 
 %build
@@ -55,7 +55,6 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 
 %files
 %defattr(644, root, root, 755)
-%{_libdir}/libpyglib-gi-2.0-python.so.*
 %{python_sitearch}/gi
 %{python_sitearch}/pygtkcompat
 %{python_sitearch}/pygobject*
@@ -65,4 +64,3 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 %dir %{_includedir}/pygobject-3.0
 %{_includedir}/pygobject-3.0/*
 %{_libdir}/pkgconfig/pygobject-3.0.pc
-%{_libdir}/libpyglib-gi-2.0-python.so
