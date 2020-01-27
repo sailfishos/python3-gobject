@@ -2,15 +2,12 @@ Name: pygobject2
 Version: 3.24.1
 Release: 1
 License: LGPLv2+
-Group: Development/Languages
 Summary: Python 2 bindings for GObject 
 URL: https://git.gnome.org/browse/pygobject
 Source: %{name}-%{version}.tar.bz2
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(python2)
-BuildRequires: pkgconfig(cairo-gobject)
-BuildRequires: pkgconfig(pycairo) >= 1.11.1
 BuildRequires: gnome-common
 
 %description
@@ -19,7 +16,6 @@ for use in Python programs.
 
 %package devel
 Summary: Development files for building add-on libraries
-Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-codegen = %{version}-%{release}
 Requires: %{name}-doc = %{version}-%{release}
@@ -37,7 +33,7 @@ find -name '*.py' -print0 | xargs -n1 -0 sed -i '1s|^#!python|#!%{__python}|'
 %build
 PYTHON=%{__python} 
 export PYTHON
-%autogen
+%autogen --disable-cairo
 make %{?_smp_mflags}
 
 %install
