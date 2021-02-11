@@ -1,11 +1,7 @@
-# fixme: should be defined in base system side
-%define python3_sitearch %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")
-
 Name: python3-gobject
-Version: 3.24.1
+Version: 3.38.0
 Release: 1
 License: LGPLv2+
-Group: Development/Languages
 Summary: Python 3 bindings for GObject
 URL: https://git.gnome.org/browse/pygobject
 Source: %{name}-%{version}.tar.bz2
@@ -14,7 +10,7 @@ BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(python3)
 BuildRequires: pkgconfig(cairo-gobject)
 BuildRequires: pkgconfig(py3cairo) >= 1.11.1
-BuildRequires: gnome-common
+BuildRequires: meson
 
 %description
 The %{name} package provides a convenient wrapper for the GObject library
@@ -22,7 +18,6 @@ for use in Python 3 programs.
 
 %package devel
 Summary: Development files for building add-on libraries
-Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-codegen = %{version}-%{release}
 Requires: %{name}-doc = %{version}-%{release}
@@ -35,18 +30,14 @@ libraries such as pygtk2.
 
 %prep
 %setup -q -n %{name}-%{version}/upstream
-find -name '*.py' -print0 | xargs -n1 -0 sed -i '1s|^#!python|#!%{__python}|'
 
 %build
-PYTHON=%{__python3}
-export PYTHON
-%autogen
-make %{?_smp_mflags}
+%meson -Dpython=%{__python3}
+%meson_build
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
-make DESTDIR=$RPM_BUILD_ROOT install
+%meson_install
 find $RPM_BUILD_ROOT -name '*.la' -delete
 find $RPM_BUILD_ROOT -name '*.a' -delete
 
@@ -56,11 +47,12 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 %files
 %defattr(644, root, root, 755)
 %{python3_sitearch}/gi
-%{python3_sitearch}/pygtkcompat
-%{python3_sitearch}/pygobject*
+%{python3_sitearch}/PyGObject*
+%{python3_sitelib}/gi
+%{python3_sitelib}/pygtkcompat
 
 %files devel
 %defattr(644, root, root, 755)
 %dir %{_includedir}/pygobject-3.0
-%{_includedir}/pygobject-3.0
+%{_includedir}/pygobject-3.0/*.h
 %{_libdir}/pkgconfig/pygobject-3.0.pc
