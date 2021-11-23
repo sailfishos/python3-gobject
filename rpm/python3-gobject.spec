@@ -46,6 +46,7 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 
 %files
 %defattr(644, root, root, 755)
+%license COPYING
 %{python3_sitearch}/gi
 %{python3_sitearch}/PyGObject*
 %{python3_sitelib}/gi
