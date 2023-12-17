@@ -1,5 +1,5 @@
 Name: python3-gobject
-Version: 3.38.0
+Version: 3.46.0
 Release: 1
 License: LGPLv2+
 Summary: Python 3 bindings for GObject
