@@ -1,10 +1,11 @@
 Name: python3-gobject
-Version: 3.46.0
+Version: 3.50.0
 Release: 1
 License: LGPLv2+
 Summary: Python 3 bindings for GObject
 URL: https://git.gnome.org/browse/pygobject
 Source: %{name}-%{version}.tar.bz2
+Patch1: 0001-Revert-Drop-support-for-Python-3.8.patch
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(python3)
@@ -29,14 +30,13 @@ This package contains files required to build wrappers for %{name}-based
 libraries such as pygtk2.
 
 %prep
-%setup -q -n %{name}-%{version}/upstream
+%autosetup -p1 -n %{name}-%{version}/upstream
 
 %build
 %meson -Dpython=%{__python3}
 %meson_build
 
 %install
-rm -rf $RPM_BUILD_ROOT
 %meson_install
 find $RPM_BUILD_ROOT -name '*.la' -delete
 find $RPM_BUILD_ROOT -name '*.a' -delete
@@ -45,7 +45,6 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(644, root, root, 755)
 %license COPYING
 %{python3_sitearch}/gi
 %{python3_sitearch}/PyGObject*
@@ -53,7 +52,6 @@ find $RPM_BUILD_ROOT -name '*.a' -delete
 %{python3_sitelib}/pygtkcompat
 
 %files devel
-%defattr(644, root, root, 755)
 %dir %{_includedir}/pygobject-3.0
 %{_includedir}/pygobject-3.0/*.h
 %{_libdir}/pkgconfig/pygobject-3.0.pc
