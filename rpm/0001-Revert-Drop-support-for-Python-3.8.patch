@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Matti=20Lehtim=C3=A4ki?= <matti.lehtimaki@jolla.com>
+Date: Sat, 21 Dec 2024 02:17:01 +0200
+Subject: [PATCH] Revert "Drop support for Python 3.8"
+
+This reverts commit e51fdc963e42a603e73036a24b2b94b7b403f778.
+---
+ .gitlab-ci.yml | 6 ++++++
+ METADATA.in    | 2 +-
+ README.rst     | 2 +-
+ meson.build    | 4 ++--
+ pyproject.toml | 2 +-
+ 5 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index 4e4175e9eee5c3af85b6d6db79cb827d38d87819..db1c982c1176e4e6aa5bfcf145a6b274726b7fcc 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -76,6 +76,12 @@ mingw64:
+     MSYSTEM: "MINGW64"
+   <<: *mingw-defaults
+ 
++python3.8:
++  variables:
++    PYTHON_VERSION: "3.8"
++    TEST_GTK_VERSION: "3.0"
++  <<: *defaults
++
+ python3.9:
+   variables:
+     PYTHON_VERSION: "3.9"
+diff --git a/METADATA.in b/METADATA.in
+index 7169b8cf2cf18edd515bf4bfa9455aa91ae1f674..88469db7219ba22b1d743ee0f979785402be1e1b 100644
+--- a/METADATA.in
++++ b/METADATA.in
+@@ -18,4 +18,4 @@ Classifier: Operating System :: Microsoft :: Windows
+ Classifier: Programming Language :: C
+ Classifier: Programming Language :: Python
+ Classifier: Topic :: Software Development :: Libraries :: Python Modules
+-Requires-Python: >=3.9, <4
++Requires-Python: >=3.8, <4
+diff --git a/README.rst b/README.rst
+index a6cf160ba57140d5fae0668f46e7d5dd11e361df..142c6544e9d93824273ffcb53156b833bc9fa5bc 100644
+--- a/README.rst
++++ b/README.rst
+@@ -12,7 +12,7 @@
+ <https://docs.gtk.org/glib/>`__, `GIO
+ <https://docs.gtk.org/gio/>`__ and many more.
+ 
+-It supports Linux, Windows, and macOS and works with **Python 3.9+** and
++It supports Linux, Windows, and macOS and works with **Python 3.8+** and
+ **PyPy3**. PyGObject, including this documentation, is licensed under the
+ **LGPLv2.1+**.
+ 
+diff --git a/meson.build b/meson.build
+index 73589a0c8865ab516146dd7d8f6627543145abfc..dae83469935af90c5f3f111cc59c50d9c631c9ea 100644
+--- a/meson.build
++++ b/meson.build
+@@ -17,8 +17,8 @@ platform_version = '@0@.0'.format(pygobject_version_major)
+ pymod = import('python')
+ python = pymod.find_installation(get_option('python'), pure: false)
+ 
+-if python.language_version().version_compare('< 3.9')
+-  error('Requires Python >= 3.9')
++if python.language_version().version_compare('< 3.8')
++  error('Requires Python >= 3.8')
+ endif
+ 
+ python_dep = python.dependency()
+diff --git a/pyproject.toml b/pyproject.toml
+index ef8a4852012795f11300e683a458748a6d2f5c4a..43051375d2afec9b85af69bd57c382e1b5bd22d7 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -22,7 +22,7 @@ classifiers = [
+     "Programming Language :: Python",
+     "Topic :: Software Development :: Libraries :: Python Modules",
+ ]
+-requires-python = ">=3.9, <4.0"
++requires-python = ">=3.8, <4.0"
+ dependencies = [
+     "pycairo>=1.16"
+ ]
